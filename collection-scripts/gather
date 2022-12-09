@@ -1,0 +1,15 @@
+#!/bin/bash
+
+BASE_COLLECTION_PATH="/must-gather"
+mkdir -p ${BASE_COLLECTION_PATH}
+
+oc adm inspect costmanagementmetricsconfigs.costmanagement-metrics-cfg.openshift.io --all-namespaces --dest-dir=must-gather 
+COSTNS+=`oc get costmanagementmetricsconfigs.costmanagement-metrics-cfg.openshift.io --all-namespaces --no-headers=true 2> /dev/null | awk '{print "\n" $1}'`
+
+
+NS=`echo ${COSTNS[@]}  | tr ' ' '\n'  | sort | uniq`
+
+for a in $NS; do
+  oc adm inspect ns/"$a" --all-namespaces  --dest-dir=must-gather
+  oc get pods -n $a >> ${BASE_COLLECTION_PATH}/gather-costmgmt.log
+done
